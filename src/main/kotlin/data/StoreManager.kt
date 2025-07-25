@@ -9,6 +9,7 @@ import interfaces.OrderManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.io.PrintStream
 
 // Store Manager for handling orders and products and coroutines simulate network delay
 class StoreManager : OrderManager {
@@ -60,7 +61,7 @@ class StoreManager : OrderManager {
     override suspend fun placeOrder(user: User, product: Product): Result<Order> =
         withContext(Dispatchers.IO) { // Run on a background thread IO
             try {
-                delay(500) // Simulate processing time
+                delay(500) // Simulate processing
 
                 if (product.inStock <= 0) {
                     return@withContext Result.failure(
@@ -78,7 +79,7 @@ class StoreManager : OrderManager {
                 product.inStock--
                 orders.add(order)
 
-                if (user is Customer) {
+                if (user is Customer)   {
                     user.orders.add(order)
                 }
 
@@ -101,4 +102,26 @@ class StoreManager : OrderManager {
         delay(300)
         return orders.toList() // return immutable copy
     }
+
+    override suspend fun deleteProduct(id: Int): Boolean {
+        val product = products.find { it.id == id }
+        if (product != null) {
+            products.remove(product)
+            return true
+        } else {
+            return false
+        }
+    }
+
+
+    override suspend fun updateProductStock(id: Int, newStock: Int): Boolean {
+        val product = products.find { it.id == id }
+        if (product != null) {
+            product.inStock = newStock
+            return true
+        } else {
+            return false
+        }
+    }
+
 }
